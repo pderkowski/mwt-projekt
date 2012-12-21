@@ -1,0 +1,47 @@
+extends layout
+
+block scripts
+  script(type='text/javascript', 
+    src='//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js')
+  script(type='text/javascript', src='../javascripts/spectrum.js')
+
+append stylesheets
+  link(rel='stylesheet', href='/stylesheets/spectrum.css')
+
+block content
+  div#toolbox
+    ul
+      li
+        input(type='button',name='tool',value='line')
+      li
+        input(type='button',name='tool',value='rect')
+      li
+        input(type='button',name='tool',value='pencil')
+      li
+        input(type='button',name='tool',value='rubber')
+      li
+        input(type='color',name='color',value='#000000')
+    ul
+      li
+        form(method='GET', action='/new')
+          input(type='submit',value='new')
+      li
+        input(id='save',type='button',value='save')
+    ul
+      li
+        form(method='GET', action='/gallery')
+            input(type='submit',value='gallery')
+
+  #container
+    canvas#imageView(width=canvas.width, height=canvas.height)
+      p
+        | Unfortunately, your browser is currently unsupported by our web
+        | application.  We are sorry for the inconvenience. Please use one of 
+        | the supported browsers listed below, or draw the image you want using 
+        | an offline tool.
+  script
+    window.canvas = !{JSON.stringify(canvas)};
+    window.picName = '#{picName}';
+  script(type='text/javascript', src='../javascripts/tools.js')
+  script(type='text/javascript', src='../javascripts/save.js')
+    

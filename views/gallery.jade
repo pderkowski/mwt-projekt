@@ -1,0 +1,23 @@
+extends layout
+
+append stylesheets
+  link(rel='stylesheet', href='/stylesheets/gallery.css')
+
+block scripts
+  script(type='text/javascript', 
+    src='//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js')
+
+block content
+  table
+    caption Gallery
+      if gallery.length
+        tr
+          th Id
+          th Name
+          th Size (pixels)
+          th Preview
+          th(colspan='2') Action
+        each canvas in gallery
+          if canvas
+            include row
+  script(type='text/javascript', src='../javascripts/gallery.js')

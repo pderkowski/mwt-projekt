@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  form(method='POST', action='/create', enctype='application/x-www-form-urlencoded')
+    p
+      | Canvas name:
+      input#canvas_name(type='text', name='canvas_name', size='25', 
+                        required='required')
+    p
+      | Canvas width:
+      input#canvas_width(type='range', name='canvas_width', size='25', 
+                         required='required', min='0', max='800')
+    p
+      | Canvas height:
+      input#canvas_height(type='range', name='canvas_height', size='25', 
+                          required='required', min='0', max='600')
+    p
+      input#submit(type='submit', name='submit', value='Create')

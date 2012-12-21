@@ -1,0 +1,11 @@
+tr(id='#{canvas.id}')
+  td #{canvas.id}
+  td #{canvas.name}
+  td #{canvas.width} x #{canvas.height}
+  td(class='preview') 
+    img(class='preview', src=canvas.path + '/' + picName, 
+      alt='No preview available.')
+  td
+    a(href='/#{canvas.id}') Edit
+  td
+    a(class='delete', href='/delete/#{canvas.id}') Delete

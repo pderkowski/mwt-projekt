@@ -1,0 +1,42 @@
+body {
+  margin: 50px;
+}
+table {
+  margin: 0px auto;
+  border-collapse: collapse;
+  width: 70%;
+}
+table,
+td,
+th,
+caption {
+  border: 1px solid #000;
+  text-align: center;
+}
+td {
+  padding: 20px;
+}
+
+td.preview {
+  padding: 0px;
+}
+
+caption {
+  font-size: larger;
+  padding: 10px;
+}
+h1 {
+  font: 1.5em Georgia, serif;
+}
+ul {
+  list-style-type: none;
+}
+form {
+  margin: 20px;
+  padding: 20px;
+}
+
+img.preview {
+  max-width: 200px;
+  max-height: 150px;
+}
