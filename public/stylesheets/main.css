@@ -23,4 +23,4 @@ a {
 #imageView { 
   border: 1px solid #000; 
   background-color: white; }
-#imageTemp { position: absolute; top: 1px; left: 1px; }
+#imageTemp,#iconLayer { position: absolute; top: 1px; left: 1px; }
