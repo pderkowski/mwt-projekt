@@ -6,6 +6,10 @@ var Canvas = new Schema({
   name : {type: String, required: true, trim: true},
   width : {type: Number, required: true, default: 800},
   height : {type: Number, required: true, default: 600},
+  history : { 
+    arr: { type: Array, default: [] },
+    pos: { type: Number, default: 0 } 
+  },
   path: String
 });
 
@@ -15,6 +19,16 @@ Canvas.statics.max = function () {
 
 Canvas.statics.picName = function () {
   return 'pic.png';
+};
+
+Canvas.methods.push = function (command) {
+  this.history.arr[this.history.pos++] = command;
+  this.save(function (err) {
+    if(err) {
+      console.log(err);
+      res.send(err);
+    }
+  });
 };
 
 module.exports = mongoose.model('Canvas', Canvas);

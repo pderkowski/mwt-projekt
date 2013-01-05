@@ -63,6 +63,7 @@ app.get('/:id', routes.show);
 app.post('/create', routes.create);
 app.post('/save', routes.save(app.get('images')) );
 app.post('/delete/:id', routes.remove(app.get('images')) );
+app.post('/:id/command', routes.command);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

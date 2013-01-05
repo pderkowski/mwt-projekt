@@ -113,7 +113,7 @@ exports.show = function (req, res) {
       res.send(err);
     }
   }); 
-}
+};
 
 exports.remove = function (img_dir) {
   return function (req, res) {
@@ -147,4 +147,17 @@ exports.remove = function (img_dir) {
       }     
     });
   }
+};
+
+exports.command = function (req, res) {
+  var id = req.params.id;
+  Canvas.findOne({ id: req.params.id}, function(err, doc) {
+    if(!err && doc) {
+      doc.push(req.body);
+      res.send(200);
+    } else {
+      console.log(err);
+      res.send(err);
+    }
+  }); 
 }
