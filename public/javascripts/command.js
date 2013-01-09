@@ -50,7 +50,7 @@ var invoker = function () {
     $.ajax({
       type: 'POST',
       url: '/' + window.canvas.id + '/command', 
-      data: JSON.stringify(command),
+      data: JSON.stringify(command.toObject()),
       contentType: 'application/json; charset=utf-8',
       dataType: 'json',
       beforeSend: function() {
@@ -79,25 +79,40 @@ var commands = {
     this.execute = function () {
       drawingCtxt.drawPath(data);
     };
+    this.toObject = function () {
+      return { type: 'drawPath', data: data };
+    };
   },
   drawLine: function (data, drawingCtxt) {
     this.execute = function () {
       drawingCtxt.drawLine(data);
+    };
+    this.toObject = function () {
+      return { type: 'drawLine', data: data };
     };
   },
   strokeRect: function (data, drawingCtxt) {
     this.execute = function () {
       drawingCtxt.strokeRect(data);
     };
+    this.toObject = function () {
+      return { type: 'strokeRect', data: data };
+    };
   },
   fillRect: function (data, drawingCtxt) {
     this.execute = function () {
       drawingCtxt.fillRect(data);
     };
+    this.toObject = function () {
+      return { type: 'fillRect', data: data };
+    };
   },
   clearRect: function (data, drawingCtxt) {
     this.execute = function () {
       drawingCtxt.clearRect(data);
+    };
+    this.toObject = function () {
+      return { type: 'clearRect', data: data };
     };
   },
   rubber: function (data, drawingCtxt) {
@@ -112,10 +127,16 @@ var commands = {
           height: data.size,
           color: data.color
         });
-     }
+      }
+    };
+    this.toObject = function () {
+      return { type: 'rubber', data: data };
     };
   },
   clear: function (data, drawingCtxt) {
     this.execute = drawingCtxt.clear;
+    this.toObject = function () {
+      return { type: 'clear', data: data }
+    };
   }
 };

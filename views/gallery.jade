@@ -10,14 +10,17 @@ block scripts
 block content
   table
     caption Gallery
+      tr
+        th Id
+        th Name
+        th Size (pixels)
+        th Preview
+        th(colspan='2') Action
       if gallery.length
-        tr
-          th Id
-          th Name
-          th Size (pixels)
-          th Preview
-          th(colspan='2') Action
         each canvas in gallery
           if canvas
             include row
+      tr
+        td(colspan='6')
+          a(href='/new') New
   script(type='text/javascript', src='../javascripts/gallery.js')

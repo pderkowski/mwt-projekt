@@ -95,7 +95,6 @@ $(document).ready(function() {
 
     console.log('Canvas initialized.');
   }
-
   function ev_canvas (ev) {
     ev._x = Math.max(ev.clientX - $container.offset().left, 0);
     ev._y = Math.max(ev.clientY - $container.offset().top, 0);
@@ -104,13 +103,29 @@ $(document).ready(function() {
       func(ev);
     }
   }
-
   function ev_tool_change (ev) {
     if (tools[this.value]) {
       tool = new tools[this.value]();
       temp_ctxt.clearRect(0, 0, temp_cnv.width, temp_cnv.height);
     }
   }
+
+  $('input#replay').click(function(event) {
+    var replay = new canvasClient();
+    var replayCtxt = new drawingCtxt(perm_ctxt);
+    $.getJSON(window.canvas.id + '/history', function (history) {
+      if(history.length === 0) {
+        alert('puste');
+      }
+      replay.command('clear', {}, replayCtxt).execute();
+      for(var i = 0; i < history.length; ++i) {
+        (function (i) {
+          setTimeout(replay.command(history[i].type, history[i].data, 
+            replayCtxt).execute, 200*i)
+        })(i);
+      }
+    });
+  });
 
   init();
 });

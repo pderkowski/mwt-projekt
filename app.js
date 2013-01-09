@@ -60,6 +60,7 @@ app.get('/', routes.index);
 app.get('/new', routes.new);
 app.get('/gallery', routes.gallery);
 app.get('/:id', routes.show);
+app.get('/:id/history', routes.history);
 app.post('/create', routes.create);
 app.post('/save', routes.save(app.get('images')) );
 app.post('/delete/:id', routes.remove(app.get('images')) );

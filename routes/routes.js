@@ -150,14 +150,26 @@ exports.remove = function (img_dir) {
 };
 
 exports.command = function (req, res) {
-  var id = req.params.id;
-  Canvas.findOne({ id: req.params.id}, function(err, doc) {
-    if(!err && doc) {
-      doc.push(req.body);
-      res.send(200);
+  Canvas.findOneAndUpdate({id: req.params.id}, 
+    {$push: {'history.arr': req.body}, $inc : {'history.pos': 1}}, 
+    function (err) {
+      if(!err) {
+        res.send(200);
+      } else {
+        console.log(err);
+        res.send(err);
+      }
+    }   
+  ); 
+};
+
+exports.history = function (req, res) {
+  Canvas.findOne({ id: req.params.id}, 'history', function(err, doc) {
+    if(!err) {
+      res.json(doc.history.arr);
     } else {
       console.log(err);
       res.send(err);
     }
-  }); 
-}
+  })
+};

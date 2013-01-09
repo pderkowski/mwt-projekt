@@ -7,7 +7,7 @@ var Canvas = new Schema({
   width : {type: Number, required: true, default: 800},
   height : {type: Number, required: true, default: 600},
   history : { 
-    arr: { type: Array, default: [] },
+    arr: [],
     pos: { type: Number, default: 0 } 
   },
   path: String
@@ -28,6 +28,7 @@ Canvas.methods.push = function (command) {
       console.log(err);
       res.send(err);
     }
+    console.log(this.history.arr[pos-1]);
   });
 };
 
