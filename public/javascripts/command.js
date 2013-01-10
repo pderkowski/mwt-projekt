@@ -7,9 +7,14 @@ var canvasClient = function () {
   this.objToCommand = function (obj, drawingCtxt) {
     return new command[obj.name](obj.data, drawingCtxt);
   };
-  this.logToCommands = function (log) {
-    return log.stack.slice(0, log.stackPos).map(objToCommand)
-      .unshift(new commands.clear({}));
+  this.logToCommands = function (log, drawingCtxt) {
+    var logs = log.stack.slice(0, log.stackPos);
+    var res = [(new commands.clear({})];
+    var len = logs.length + 1;
+    for(var i = 1; i < len; ++i) {
+      res.push(that.objToCommand(logs[i]), drawingCtxt);
+    }
+    return res;
   };
 };
 
