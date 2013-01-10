@@ -1,7 +1,15 @@
 //client
 var canvasClient = function () {
-  this.command = function (type, data, drawingCtxt) {
-    return new commands[type](data, drawingCtxt);
+  var that = this;
+  this.command = function (name, data, drawingCtxt) {
+    return new commands[name](data, drawingCtxt);
+  };
+  this.objToCommand = function (obj, drawingCtxt) {
+    return new command[obj.name](obj.data, drawingCtxt);
+  };
+  this.logToCommands = function (log) {
+    return log.stack.slice(0, log.stackPos).map(objToCommand)
+      .unshift(new commands.clear({}));
   };
 };
 
@@ -44,9 +52,32 @@ var drawingCtxt = function (context) {
   };
 };
 
+var logger = function () {
+  var that = this;
+  function init() {
+    that.getCommands();
+  }
+
+  this.stack = [];
+  this.stackPos = 0;
+  this.getCommands = function () {
+    $.getJSON(window.canvas.id + '/history', function (history) {
+      that.stackPos = history.pos;
+      Array.prototype.push.apply(that.stack, history.arr);
+    });
+  };
+  this.insert = function (command) {
+    that.stack[that.stackPos++] = command.toObject();
+    that.stack.length = that.stackPos;
+  };
+
+  init();
+};
+
 //invoker
-var invoker = function () {
+var invoker = function (commandLog) {
   this.save = function (command) {
+    if(commandLog) commandLog.insert(command);
     $.ajax({
       type: 'POST',
       url: '/' + window.canvas.id + '/command', 
@@ -64,13 +95,18 @@ var invoker = function () {
       }
     });
   };
-  this.execute = function (command) {
-    command.execute();
+  this.execute = function () {
+    for(var i = 0; i < arguments.length; ++i) {
+      arguments[i].execute();
+    }
   };
   this.saveAndExecute = function (command) {
     save(command);
     execute(command);
   };
+  /*this.undo = function () {
+
+  };*/
 };
 
 //commands
@@ -80,7 +116,7 @@ var commands = {
       drawingCtxt.drawPath(data);
     };
     this.toObject = function () {
-      return { type: 'drawPath', data: data };
+      return { name: 'drawPath', data: data };
     };
   },
   drawLine: function (data, drawingCtxt) {
@@ -88,7 +124,7 @@ var commands = {
       drawingCtxt.drawLine(data);
     };
     this.toObject = function () {
-      return { type: 'drawLine', data: data };
+      return { name: 'drawLine', data: data };
     };
   },
   strokeRect: function (data, drawingCtxt) {
@@ -96,7 +132,7 @@ var commands = {
       drawingCtxt.strokeRect(data);
     };
     this.toObject = function () {
-      return { type: 'strokeRect', data: data };
+      return { name: 'strokeRect', data: data };
     };
   },
   fillRect: function (data, drawingCtxt) {
@@ -104,7 +140,7 @@ var commands = {
       drawingCtxt.fillRect(data);
     };
     this.toObject = function () {
-      return { type: 'fillRect', data: data };
+      return { name: 'fillRect', data: data };
     };
   },
   clearRect: function (data, drawingCtxt) {
@@ -112,7 +148,7 @@ var commands = {
       drawingCtxt.clearRect(data);
     };
     this.toObject = function () {
-      return { type: 'clearRect', data: data };
+      return { name: 'clearRect', data: data };
     };
   },
   rubber: function (data, drawingCtxt) {
@@ -130,13 +166,13 @@ var commands = {
       }
     };
     this.toObject = function () {
-      return { type: 'rubber', data: data };
+      return { name: 'rubber', data: data };
     };
   },
   clear: function (data, drawingCtxt) {
     this.execute = drawingCtxt.clear;
     this.toObject = function () {
-      return { type: 'clear', data: data }
+      return { name: 'clear', data: data }
     };
   }
 };

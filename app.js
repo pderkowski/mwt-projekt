@@ -26,9 +26,9 @@ mongoose.connection.on('open', function() {
       });
       default_canvas.save(function(err,data) {
         if (err) {
-           console.log(err);
+          console.log(err);
         } else {
-           console.log(data);
+          console.log(data);
         }
       });
     }
@@ -60,7 +60,7 @@ app.get('/', routes.index);
 app.get('/new', routes.new);
 app.get('/gallery', routes.gallery);
 app.get('/:id', routes.show);
-app.get('/:id/history', routes.history);
+app.get(/^\/(\d+)\/history(?:\/(-?\d+)(?:\,(-?\d+))?)?$/, routes.history); // /:id/history || /:id/history/:num || /:id/history/:num1,:num2
 app.post('/create', routes.create);
 app.post('/save', routes.save(app.get('images')) );
 app.post('/delete/:id', routes.remove(app.get('images')) );

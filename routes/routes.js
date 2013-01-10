@@ -150,23 +150,36 @@ exports.remove = function (img_dir) {
 };
 
 exports.command = function (req, res) {
-  Canvas.findOneAndUpdate({id: req.params.id}, 
-    {$push: {'history.arr': req.body}, $inc : {'history.pos': 1}}, 
-    function (err) {
-      if(!err) {
-        res.send(200);
-      } else {
-        console.log(err);
-        res.send(err);
-      }
-    }   
-  ); 
-};
-
-exports.history = function (req, res) {
-  Canvas.findOne({ id: req.params.id}, 'history', function(err, doc) {
+  Canvas.findOne({id: req.params.id}, 'history', function (err, doc) {
     if(!err) {
-      res.json(doc.history.arr);
+      doc.history.arr[doc.history.pos] = req.body;
+      doc.history.arr.length = ++(doc.history.pos);
+      doc.markModified('history.arr')
+      doc.save();
+      res.send(200);
+    } else {
+      console.log(err);
+      res.send(err);
+    }
+  }); 
+};
+exports.history = function (req, res) {
+  Canvas.findOne({ id: req.params[0]}, 'history', function(err, doc) {
+    if(!err) {
+      var begin = 0;
+      var end = doc.history.pos;
+      if(typeof req.params[1] != 'undefined') {
+        var temp1 = parseInt(req.params[1]);
+        begin = ((temp1 < 0)? doc.history.pos : 0) + temp1;
+        if(typeof req.params[2] != 'undefined') {
+          var temp2 = parseInt(req.params[2]);
+          end = ((temp2 < 0)? doc.history.pos : 0) + temp2;
+        }
+      }
+      res.json({
+        arr: doc.history.arr.slice(begin, end),
+        pos: doc.history.pos
+      });
     } else {
       console.log(err);
       res.send(err);

@@ -21,15 +21,4 @@ Canvas.statics.picName = function () {
   return 'pic.png';
 };
 
-Canvas.methods.push = function (command) {
-  this.history.arr[this.history.pos++] = command;
-  this.save(function (err) {
-    if(err) {
-      console.log(err);
-      res.send(err);
-    }
-    console.log(this.history.arr[pos-1]);
-  });
-};
-
 module.exports = mongoose.model('Canvas', Canvas);
