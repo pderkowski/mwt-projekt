@@ -19,8 +19,15 @@ a {
   width: 80px;
 }
 
-#container { position: relative; float: left; }
+#container { 
+  position: relative; 
+  float: left; 
+  background-color: white;
+}
 #imageView { 
   border: 1px solid #000; 
-  background-color: white; }
-#imageTemp,#iconLayer { position: absolute; top: 1px; left: 1px; }
+}
+#imageTemp,#iconLayer,#imageBuffer { position: absolute; top: 1px; left: 1px; }
+#imageBuffer {
+  visibility: hidden;
+}

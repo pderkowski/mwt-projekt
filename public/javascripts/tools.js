@@ -1,12 +1,31 @@
-var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
+var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
   var tlbx = this;
-  this.current_color = 'black';
-  var user = new canvasClient();
-  var commandLog = new logger();
-  var actionHandler = new invoker(commandLog);
   var drawPerm = new drawingCtxt(perm_ctxt),
       drawTemp = new drawingCtxt(temp_ctxt),
       drawIcon = new drawingCtxt(icon_ctxt);
+  var user = new client();
+  var commandLogger = new logger();
+
+  this.actions = {
+    undo: function () {
+      commandLogger.changePos(-1);
+      tlbx.actions.replay(0);
+    },
+    redo: function () {
+      commandLogger.changePos(1);
+      tlbx.actions.replay(0);
+    },
+    replay: function (delay) {
+      user.command('clear', {}, drawPerm).execute();
+      user.logsToCommands(commandLogger.getCommands(), drawPerm)
+        .forEach(function (command, i) {
+          setTimeout(command.execute, delay*(i+1));
+        });
+    }
+  };
+  this.settings = {
+    current_color: 'black'
+  };
 
   this.pencil = function () {
     var tool = this;
@@ -20,13 +39,13 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
     };
     this.mousemove = function (ev) {
       if (tool.started) {
-        actionHandler.execute(user.command('drawLine', { 
+        user.command('drawLine', { 
           x0: tool.x0, 
           y0: tool.y0,
           x1: ev._x, 
           y1: ev._y, 
-          color: tlbx.current_color 
-        }, drawTemp));
+          color: tlbx.settings.current_color 
+        }, drawTemp).execute();
         tool.track.push({ x: ev._x, y: ev._y });
         tool.x0 = ev._x;
         tool.y0 = ev._y;
@@ -36,9 +55,9 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        actionHandler.save(user.command('drawPath', { 
+        commandLogger.insert(user.command('drawPath', { 
           track: tool.track,
-          color: tlbx.current_color 
+          color: tlbx.settings.current_color 
         }, drawPerm));
         tlbx.img_update();
       }
@@ -62,16 +81,16 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
         tool.w = Math.abs(ev._x - tool.x0);
         tool.h = Math.abs(ev._y - tool.y0);
 
-        actionHandler.execute(user.command('clear', {}, drawTemp));
+        user.command('clear', {}, drawTemp).execute();
 
         if (tool.w && tool.h) {
-          actionHandler.execute(user.command('strokeRect', { 
+          user.command('strokeRect', { 
             left: tool.l, 
             top: tool.t, 
             width: tool.w,
             height: tool.h, 
-            color: tlbx.current_color 
-          }, drawTemp));
+            color: tlbx.settings.current_color 
+          }, drawTemp).execute();
         }
       }
     };
@@ -79,12 +98,12 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        actionHandler.save(user.command('strokeRect', { 
-          left: tool.x, 
-          top: tool.y, 
+        commandLogger.insert(user.command('strokeRect', { 
+          left: tool.l, 
+          top: tool.t, 
           width: tool.w, 
           height: tool.h, 
-          color: tlbx.current_color 
+          color: tlbx.settings.current_color 
         }, drawPerm));
         tlbx.img_update();
       }
@@ -103,26 +122,26 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
     };
     this.mousemove = function (ev) {
       if (tool.started) {
-        actionHandler.execute(user.command('clear', {}, drawTemp));
-        actionHandler.execute(user.command('drawLine', { 
+        user.command('clear', {}, drawTemp).execute();
+        user.command('drawLine', { 
           x0: tool.x0, 
           y0: tool.y0, 
           x1: ev._x, 
           y1: ev._y, 
-          color: tlbx.current_color 
-        }, drawTemp));
+          color: tlbx.settings.current_color 
+        }, drawTemp).execute();
       }
     };
     this.mouseup = function (ev) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        actionHandler.save(user.command('drawLine', { 
+        commandLogger.insert(user.command('drawLine', { 
           x0: tool.x0, 
           y0: tool.y0, 
           x1: ev._x, 
           y1: ev._y, 
-          color: tlbx.current_color 
+          color: tlbx.settings.current_color 
         }, drawPerm));
         tlbx.img_update();
       }
@@ -147,23 +166,23 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
           r = Math.min(ev._x + size, temp_ctxt.canvas.width),
           b = Math.min(ev._y + size, temp_ctxt.canvas.height);
 
-      actionHandler.execute(user.command('clear', {}, drawIcon));
-      actionHandler.execute(user.command('strokeRect', {
+      user.command('clear', {}, drawIcon).execute();
+      user.command('strokeRect', {
         left: l, 
         top: t,
         width: r - l,
         height: b - t,
         color: strokeColor
-      }, drawIcon));
+      }, drawIcon).execute();
 
       if(tool.started) {
-        actionHandler.execute(user.command('fillRect', {
+        user.command('fillRect', {
           left: l, 
           top: t,
           width: r - l,
           height: b - t,
           color: fillColor
-        }, drawTemp));
+        }, drawTemp).execute();
         tool.track.push({ x: ev._x, y: ev._y });
       }
     };
@@ -171,7 +190,7 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        actionHandler.save(user.command('rubber', {
+        commandLogger.insert(user.command('rubber', {
           track: tool.track,
           size: size,
           color: fillColor
@@ -180,13 +199,20 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt) {
       }
     };
     this.mouseout = function (ev) {
-      actionHandler.execute(user.command('clear', {}, drawIcon));
-      mouseup(ev);
+      user.command('clear', {}, drawIcon).execute();
+      tool.mouseup(ev);
     };
   };
 
   this.img_update = function () {
     perm_ctxt.drawImage(temp_ctxt.canvas, 0, 0);
-    actionHandler.execute(user.command('clear', {}, drawTemp));
+    user.command('clear', {}, drawTemp).execute();
   };
 };
+
+  /*var buffOptions = {
+    min: 5,
+    max: 15,
+    size: 10,
+    drawingCtxt: drawBuff
+  };*/

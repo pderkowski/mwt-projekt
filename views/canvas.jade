@@ -28,19 +28,24 @@ block content
       li
         input(id='save',type='button',value='save')
       li
-        input(id='replay',type='button',value='replay')
+        input(id='undo',type='button',value='undo')
+      li
+        input(id='redo',type='button',value='redo')
     ul
       li
+        input(id='replay',type='button',value='replay')
+      li
         form(method='GET', action='/gallery')
-            input(type='submit',value='gallery')
+          input(type='submit',value='gallery')
 
-  #container
+  div#container
+    canvas#imageBuffer(width=canvas.width, height=canvas.height)
     canvas#imageView(width=canvas.width, height=canvas.height)
       p
         | Unfortunately, your browser is currently unsupported by our web
-        | application.  We are sorry for the inconvenience. Please use one of 
-        | the supported browsers listed below, or draw the image you want using 
-        | an offline tool.
+        | application.  We are sorry for the inconvenience.
+    canvas#imageTemp(width=canvas.width, height=canvas.height)
+    canvas#iconLayer(width=canvas.width, height=canvas.height)
   script
     window.canvas = !{JSON.stringify(canvas)};
     window.picName = '#{picName}';
