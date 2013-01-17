@@ -18,17 +18,6 @@ $(document).ready(function() {
     if (!perm_ctxt) {
       alert('Error: failed to getContext!');
       return;
-    } else {
-      var img = new Image();
-      if(img && window.canvas.path) {
-        img.src = window.canvas.path + '/' + window.picName;
-        $(img).load(function () {
-          perm_ctxt.drawImage(img,0,0);
-        });
-      } else {
-        perm_ctxt.fillStyle = 'white';
-        perm_ctxt.fillRect(0, 0, perm_cnv.width, perm_cnv.height);
-      }
     }
 
     buff_cnv = $('canvas#imageBuffer')[0];

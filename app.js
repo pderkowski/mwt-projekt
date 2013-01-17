@@ -1,16 +1,13 @@
-
-/**
- * Module dependencies.
- */
-
 var express = require('express')
   , routes = require('./routes/routes')
-  , http = require('http')
   , path = require('path')
   , mongoose = require('mongoose')
   , Canvas = require('./models/canvas')
-  , app = express();
-  
+  , ioHandler = require('./routes/ioHandler')
+  , app = express()
+  , server = require('http').createServer(app)
+  , io = require('socket.io').listen(server);
+    
 
 mongoose.connect('mongodb://127.0.0.1/CanvasDB');
  
@@ -64,8 +61,11 @@ app.get(/^\/(\d+)\/history(?:\/(-?\d+)(?:\,(-?\d+))?)?$/, routes.history); // /:
 app.post('/create', routes.create);
 app.post('/save', routes.save(app.get('images')) );
 app.post('/delete/:id', routes.remove(app.get('images')) );
-app.post('/:id/command', routes.command);
 
-http.createServer(app).listen(app.get('port'), function(){
+server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
+
+io.sockets.on('connection', ioHandler.connection);
+
+

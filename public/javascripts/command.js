@@ -63,11 +63,21 @@ var log = function (history) {
   var stackPos = history.pos;
 
   this.insert = function (command) {
-    stack[stackPos++] = command.toObject();
+    if( command.name && command.data ) {
+      stack[stackPos++] = command;
+    } else if( $.isFunction(command.toObject) ) {
+      stack[stackPos++] = command.toObject();
+    } else {
+      return;
+    }
     stack.length = stackPos;
   };
   this.changePos = function (diff) {
-    if(diff)  stackPos = Math.min( Math.max(0, stackPos + diff), stack.length );
+    var before = stackPos;
+    if(diff) {
+      stackPos = Math.min( Math.max(0, stackPos + diff), stack.length );
+    } 
+    return stackPos - before;
   };
   this.getCommands = function (begin, end) {
     var b = Math.max(0, begin) || 0;
@@ -77,37 +87,57 @@ var log = function (history) {
 };
 
 //invoker
-var logger = function () {
+var logger = function (renderer) {
   var commandLog;
+  var server = new socket(this, 'http://localhost');
   var that = this;
 
-  function init() {
-    $.getJSON(window.canvas.id + '/history', function (history) {
-      commandLog = new log(history);
-      that.getCommands = commandLog.getCommands;
-      that.changePos = commandLog.changePos;
+  (function init() {
+    server.getCommands(function (commands) {
+      commandLog = new log(commands); 
+      that.render();
     });
-  }
-  this.insert = function (command) {
-    if(commandLog.insert) commandLog.insert(command);
-    $.ajax({
-      type: 'POST',
-      url: '/' + window.canvas.id + '/command', 
-      data: JSON.stringify(command.toObject()),
-      contentType: 'application/json; charset=utf-8',
-      dataType: 'json',
-      beforeSend: function() {
-        $('#loading').show();
-      },
-      success: function(res) {
-        $('#loading').hide();
-      },
-      error: function(err) {
-        $('#loading').hide();
+  })();
+
+  this.insert = function (command, flags) {
+    if(commandLog.insert) {
+      commandLog.insert(command);
+      if(!flags || !flags.synced) {
+        server.insert(command);
       }
-    });
+      if((!flags || flags.render) && renderer) {
+        that.render();
+      }
+    }
   };
-  init();
+  this.undo = function (flags) {
+    if( commandLog.changePos(-1) ) {
+      if(!flags || !flags.synced) {
+        server.undo();
+      }
+      if((!flags || flags.render) && renderer) {
+        that.render();
+      }
+    }
+  };
+  this.redo = function (flags) {
+    if( commandLog.changePos(1) ) {
+      if(!flags || !flags.synced) {
+        server.redo();
+      }
+      if((!flags || flags.render) && renderer) {
+        that.render();
+      }
+    }
+  };
+  this.render = function (delay = 0) {
+    renderer.command('clear', {}).execute();
+    //alert('after');
+    renderer.logsToCommands(commandLog.getCommands())
+      .forEach(function (command, i) {
+        setTimeout(command.execute, delay*(i+1));
+      });
+  };
 };
 
 var commands = {
@@ -154,13 +184,12 @@ var commands = {
   rubber: function (data, drawingCtxt) {
     this.execute = function () {
       const len = data.track.length;
-      const halfsize = data.size / 2;
       for (var i = 0; i < len; ++i) {
         drawingCtxt.fillRect({
-          left: data.track[i].x - halfsize,
-          top: data.track[i].y - halfsize,
-          width: data.size,
-          height: data.size,
+          left: data.track[i].x - data.size,
+          top: data.track[i].y - data.size,
+          width: 2 * data.size,
+          height: 2 * data.size,
           color: data.color
         });
       }
@@ -176,77 +205,3 @@ var commands = {
     };
   }
 };
-
-/*drawingCtxt:
-  this.meta = {
-    copy: function () {
-      return context.canvas;
-    },
-    paste: function (image) {
-      that.clear();
-      context.drawImage(image, 0, 0);
-    }
-  };
-
-logger:
-  this.unbuffered = function () {
-    return stack.slice(that.buffer.buffered, stackPos);
-  }
-
-this.buffer = (function (buffOptions) {
-    var commandMaker = new client(buffOptions.drawingCtxt);
-    var buffPos = 0;
-    var buffMin = buffOptions.min || 5;
-    var buffMax = buffOptions.max || 15;
-    var buffProperSize = buffOptions.size || 10;
-    return {
-      buffUpdate: function () {
-        var buffCurrentSize = stackPos - buffPos;
-        var newBuffPos = Math.max(0, stackPos - buffProperSize);
-        var toDoCommands = [];
-
-        if(buffCurrentSize < buffMin && buffPos > 0) {
-          toDoCommands = [(new commands.clear({})).toObject()]
-            .concat(stack.slice(0, newBuffPos));
-        } else if(buffCurrentSize > buffMax) {
-          toDoCommands = stack.slice(buffPos, newBuffPos);
-        }
-        if(toDoCommands.length > 0) {
-          commandMaker.logsToCommands(toDoCommands).forEach(function (that) {
-            that.execute();
-          });
-          buffPos = newBuffPos;
-        }
-      },
-      buffered: function () { return buffPos },
-      copy: function () {
-        return buffOptions.drawingCtxt.meta.copy();
-      }
-    }
-  })(buffOptions);
-
-  var logSync = function (logger, drawingCtxt) {
-  var commandMaker = new client(drawingCtxt);
-  var that = this;
-
-  this.log = function (command) {
-    logger.insert(command);
-    
-  };
-  this.update = function () {
-    //if(logger.buffer) {
-    //  drawingCtxt.meta.paste(logger.buffer.copy());
-    //}
-    commandMaker.logsToCommands(logger.unbuffered()).forEach(function (that) {
-      that.execute();
-    });
-  };
-  this.undo = function () {
-    logger.changePos(-1);
-    that.update();
-  };
-  this.redo = function () {
-    logger.changePos(1);
-    that.update();
-  };
-};*/

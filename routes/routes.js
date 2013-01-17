@@ -27,8 +27,7 @@ exports.create = function(req, res) {
        res.send(err);
     } else {
        console.log(data);
-       res.render('canvas', {title: doc.name, canvas: doc.toObject(),
-                             picName: Canvas.picName()});
+       res.redirect('/' + new_canvas.id);
     }
   });
 };
@@ -149,35 +148,14 @@ exports.remove = function (img_dir) {
   }
 };
 
-exports.command = function (req, res) {
-  Canvas.findOne({id: req.params.id}, 'history', function (err, doc) {
-    if(!err) {
-      doc.history.arr[doc.history.pos] = req.body;
-      doc.history.arr.length = ++(doc.history.pos);
-      doc.markModified('history.arr')
-      doc.save();
-      res.send(200);
-    } else {
-      console.log(err);
-      res.send(err);
-    }
-  }); 
-};
 exports.history = function (req, res) {
   Canvas.findOne({ id: req.params[0]}, 'history', function(err, doc) {
     if(!err) {
-      var begin = 0;
-      var end = doc.history.pos;
-      if(typeof req.params[1] != 'undefined') {
-        var temp1 = parseInt(req.params[1]);
-        begin = ((temp1 < 0)? doc.history.pos : 0) + temp1;
-        if(typeof req.params[2] != 'undefined') {
-          var temp2 = parseInt(req.params[2]);
-          end = ((temp2 < 0)? doc.history.pos : 0) + temp2;
-        }
-      }
+      var sliceArgs = req.params.slice(1,3).filter(function (isDefined) {
+        return isDefined;
+      });
       res.json({
-        arr: doc.history.arr.slice(begin, end),
+        arr: Array.prototype.slice.apply(doc.history.arr, sliceArgs),
         pos: doc.history.pos
       });
     } else {
