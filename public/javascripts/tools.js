@@ -15,11 +15,15 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
       commandLogger.redo({ render: true });
     },
     replay: function (delay) {
-      commandLogger.render(delay);
+      commandLogger.render(0, delay);
+    },
+    clear: function () {
+      commandLogger.clear({ render: true });
     }
   };
   this.settings = {
-    current_color: 'black'
+    color: 'black',
+    lineWidth: 3
   };
 
   this.pencil = function () {
@@ -39,7 +43,7 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
           y0: tool.y0,
           x1: ev._x, 
           y1: ev._y, 
-          color: tlbx.settings.current_color 
+          settings: jQuery.extend(true, {}, tlbx.settings)
         }, drawTemp).execute();
         tool.track.push({ x: ev._x, y: ev._y });
         tool.x0 = ev._x;
@@ -50,11 +54,11 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        user.command('clear', {}, drawTemp).execute();
         commandLogger.insert(user.command('drawPath', { 
           track: tool.track,
-          color: tlbx.settings.current_color 
+          settings: jQuery.extend(true, {}, tlbx.settings) 
         }, drawPerm));
+        user.command('clear', {}, drawTemp).execute(10);
       }
     };
     this.mouseout = this.mouseup;
@@ -84,7 +88,7 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
             top: tool.t, 
             width: tool.w,
             height: tool.h, 
-            color: tlbx.settings.current_color 
+            settings: jQuery.extend(true, {}, tlbx.settings)
           }, drawTemp).execute();
         }
       }
@@ -93,14 +97,14 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        user.command('clear', {}, drawTemp).execute();
         commandLogger.insert(user.command('strokeRect', { 
           left: tool.l, 
           top: tool.t, 
           width: tool.w, 
           height: tool.h, 
-          color: tlbx.settings.current_color 
+          settings: jQuery.extend(true, {}, tlbx.settings)
         }, drawPerm));
+        user.command('clear', {}, drawTemp).execute(10);
       }
     };
     this.mouseout = this.mouseup;
@@ -123,7 +127,7 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
           y0: tool.y0, 
           x1: ev._x, 
           y1: ev._y, 
-          color: tlbx.settings.current_color 
+          settings: jQuery.extend(true, {}, tlbx.settings)
         }, drawTemp).execute();
       }
     };
@@ -131,14 +135,14 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        user.command('clear', {}, drawTemp).execute();
         commandLogger.insert(user.command('drawLine', { 
           x0: tool.x0, 
           y0: tool.y0, 
           x1: ev._x, 
           y1: ev._y, 
-          color: tlbx.settings.current_color 
+          settings: jQuery.extend(true, {}, tlbx.settings)
         }, drawPerm));
+        user.command('clear', {}, drawTemp).execute(10);
       }
     };
     this.mouseout = this.mouseup;
@@ -147,7 +151,6 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
   this.rubber = function () {
     var tool = this;
     const size = 10;
-    const strokeColor = 'black';
     const fillColor = 'white';
     this.started = false;
 
@@ -167,7 +170,10 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
         top: t,
         width: r - l,
         height: b - t,
-        color: strokeColor
+        settings: {
+          color: 'black',
+          lineWidth: 1
+        }
       }, drawIcon).execute();
 
       if(tool.started) {
@@ -176,7 +182,10 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
           top: t,
           width: r - l,
           height: b - t,
-          color: fillColor
+          settings: {
+            color: fillColor,
+            lineWidth: tlbx.settings.lineWidth
+          },
         }, drawTemp).execute();
         tool.track.push({ x: ev._x, y: ev._y });
       }
@@ -185,12 +194,15 @@ var toolbox = function (perm_ctxt, temp_ctxt, icon_ctxt, buff_ctxt) {
       if (tool.started) {
         tool.mousemove(ev);
         tool.started = false;
-        user.command('clear', {}, drawTemp).execute();
         commandLogger.insert(user.command('rubber', {
           track: tool.track,
           size: size,
-          color: fillColor
+          settings: {
+            color: fillColor,
+            lineWidth: tlbx.settings.lineWidth
+          },
         }, drawPerm));
+        user.command('clear', {}, drawTemp).execute(10);
       }
     };
     this.mouseout = function (ev) {

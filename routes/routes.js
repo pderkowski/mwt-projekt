@@ -104,9 +104,29 @@ exports.gallery = function (req, res) {
 exports.show = function (req, res) {
   console.log('Showing ' + req.params.id);
   Canvas.findOne({ id: req.params.id}, function(err, doc) {
-    if(!err && doc) {
-      res.render('canvas', {title: doc.name, canvas: doc.toObject(),
-                            picName: Canvas.picName()});
+    if(!err) {
+      if(doc) {
+        res.render('canvas', { title: doc.name, canvas: doc.toObject(),
+          picName: Canvas.picName() });
+      } else if( req.params.id === Canvas.max().toString() ) {
+        var defaultCanvas = new Canvas({
+          id : 1000000,
+          name : 'default',
+          width : 800,
+          height: 600
+        });
+        defaultCanvas.save(function(err, doc) {
+          if (err) {
+            console.log(err);
+            res.send(err);
+          } else {
+            res.render('canvas', { title: doc.name, canvas: doc.toObject(),
+              picName: Canvas.picName() });
+          }
+        });
+      } else {
+        res.redirect('/new');
+      }
     } else {
       console.log(err);
       res.send(err);

@@ -3,7 +3,7 @@ var express = require('express')
   , path = require('path')
   , mongoose = require('mongoose')
   , Canvas = require('./models/canvas')
-  , ioHandler = require('./routes/ioHandler')
+  , ioHandler = require('./routes/socketServer')
   , app = express()
   , server = require('http').createServer(app)
   , io = require('socket.io').listen(server);
@@ -13,26 +13,6 @@ mongoose.connect('mongodb://127.0.0.1/CanvasDB');
  
 mongoose.connection.on('open', function() {
   console.log('Connected to Mongoose');
-  Canvas.findOne({id: 1000000}, function (err, doc) {
-    if(err || !doc) {
-      var default_canvas = new Canvas({
-        id : 1000000,
-        name : 'default',
-        width : 800,
-        height: 600
-      });
-      default_canvas.save(function(err,data) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log(data);
-        }
-      });
-    }
-    else {
-      console.log(doc);
-    }
-  });
 });
 
 app.configure(function(){

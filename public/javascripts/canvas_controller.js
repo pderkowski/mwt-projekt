@@ -75,7 +75,15 @@ $(document).ready(function() {
       return;
     }
     $(color_input).change(function () {
-      tools.settings.current_color = color_input.value;
+      tools.settings.color = color_input.value;
+    });
+    var lineWidth = $('select[name="lineWidth"]');
+    if (!lineWidth[0]) {
+      alert('Error: failed to get the line width selector!');
+      return;
+    }
+    lineWidth.change(function () {
+      tools.settings.lineWidth = $('select[name="lineWidth"] > option:selected').val();
     });
     icon_cnv.addEventListener('mousedown', ev_canvas, false);
     icon_cnv.addEventListener('mousemove', ev_canvas, false);
@@ -110,6 +118,12 @@ $(document).ready(function() {
 
   $('input#redo').click(function (event) {
     tools.actions.redo();
+  });
+  $('input#clear').click(function (event) {
+    if(confirm('Are you sure you want to clear the canvas? All your progress' +
+      ' will be lost!')) {
+      tools.actions.clear();
+    }
   });
 
   init();

@@ -11,17 +11,28 @@ append stylesheets
 
 block content
   div#toolbox
-    ul
-      li
-        input(type='button',name='tool',value='line')
-      li
-        input(type='button',name='tool',value='rect')
-      li
-        input(type='button',name='tool',value='pencil')
-      li
-        input(type='button',name='tool',value='rubber')
-      li
-        input(type='color',name='color',value='#000000')
+    menu(type='toolbar',label='tools') 
+      input(type='button',name='tool',value='line')
+      br
+      input(type='button',name='tool',value='rect')
+      br
+      input(type='button',name='tool',value='pencil')
+      br
+      input(type='button',name='tool',value='rubber')
+      br
+      legend color:
+      input(type='color',name='color',value='#000000')
+      br
+      legend line width:
+      select(name='lineWidth',value='line width') 
+        option(value='1') 1
+        option(value='2') 2
+        option(value='3',selected) 3
+        option(value='4') 4
+        option(value='5') 5
+        option(value='6') 6
+        option(value='7') 7
+        option(value='8') 8
     ul
       li
         form(method='GET', action='/new')
@@ -32,6 +43,8 @@ block content
         input(id='undo',type='button',value='undo')
       li
         input(id='redo',type='button',value='redo')
+      li
+        input(id='clear',type='button',value='clear')
     ul
       li
         input(id='replay',type='button',value='replay')
@@ -54,5 +67,5 @@ block content
   script(type='text/javascript', src='../javascripts/save.js')
   script(type='text/javascript', src='../javascripts/command.js')
   script(type='text/javascript', src='../javascripts/canvas_controller.js')
-  script(type='text/javascript', src='../javascripts/communicator.js')
+  script(type='text/javascript', src='../javascripts/socketClient.js')
     
